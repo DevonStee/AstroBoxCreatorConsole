@@ -78,7 +78,7 @@ function startsWith(bytes: Uint8Array, magic: number[]): boolean {
   return true;
 }
 
-function writeIdToBinBytes(bytes: Uint8Array, id: string): Uint8Array {
+function writeIdToBinBytes(bytes: Uint8Array, id: string): Uint8Array<ArrayBuffer> {
   if (bytes.length < WATCHFACE_ID_OFFSET + WATCHFACE_ID_LENGTH) {
     throw new Error("表盘文件太小，无法写入 ID");
   }

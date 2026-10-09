@@ -365,7 +365,7 @@ function resolveXiaomiTriple(target: PackageVersionTarget): {
 function writeXiaomiBin(
   bytes: Uint8Array,
   target: PackageVersionTarget,
-): Uint8Array {
+): Uint8Array<ArrayBuffer> {
   if (bytes.length < XIAOMI_VERSION_OFFSET + XIAOMI_VERSION_LENGTH) {
     throw new Error("表盘文件过小，无法写入版本");
   }

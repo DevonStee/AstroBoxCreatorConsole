@@ -186,12 +186,24 @@ function parseSubmissionClientInfo(value: unknown): SubmissionClientInfo | null 
     };
 }
 
+type ClientInfoProvider = () => SubmissionClientInfo | Promise<SubmissionClientInfo>;
+
+let clientInfoProvider: ClientInfoProvider | null = null;
+
+/**
+ * 非 Tauri 宿主（如 abcc CLI）登记自己的客户端信息，写进 request.json 的 client，
+ * 让审核方能区分提交来源。传 null 取消登记。Tauri 运行时始终以构建信息为准。
+ */
+export function setClientInfoProvider(provider: ClientInfoProvider | null) {
+    clientInfoProvider = provider;
+}
+
 /**
  * 采集当前客户端信息（CC 版本 + build.rs 注入的构建元信息）。
- * 非 Tauri 运行时（纯浏览器 dev）拿不到，返回 null。
+ * 非 Tauri 运行时取登记的提供者；未登记（纯浏览器 dev）返回 null。
  */
 export async function buildClientInfo(): Promise<SubmissionClientInfo | null> {
-    if (!isTauriRuntime()) return null;
+    if (!isTauriRuntime()) return clientInfoProvider ? await clientInfoProvider() : null;
     const [{ invoke }, { getVersion }] = await Promise.all([
         import("@tauri-apps/api/core"),
         import("@tauri-apps/api/app"),

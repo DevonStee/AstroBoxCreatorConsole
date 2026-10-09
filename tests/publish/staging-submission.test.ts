@@ -4,6 +4,8 @@ import {
   type CatalogUpdateRequest,
 } from "../../app/logic/publish/staging-submission";
 import { PUBLISH_CONFIG } from "../../app/config/publish";
+import { saveRepoEnvId } from "../../app/config/repoEnv";
+import { saveAccountState } from "../../app/logic/account/store";
 
 const originalFetch = globalThis.fetch;
 
@@ -49,10 +51,10 @@ function stubAccount(login = "sl9325", token = "tok-123") {
     setItem: (key: string, value: string) => void store.set(key, value),
     removeItem: (key: string) => void store.delete(key),
   };
-  store.set(
-    "ACCOUNT_STATE_V2",
-    JSON.stringify({ github: { token, username: login }, astrobox: {} }),
-  );
+  // 账号与环境在模块里有内存缓存：同进程里先跑的测试文件可能已缓存了别的账号 /
+  // 环境，只改 localStorage 不会生效，必须经由模块自己的写入函数更新。
+  saveAccountState({ github: { token, username: login } } as Parameters<typeof saveAccountState>[0]);
+  saveRepoEnvId("official");
 }
 
 function buildPayload(
